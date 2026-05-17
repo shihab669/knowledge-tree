@@ -9,135 +9,148 @@ A visual knowledge management system for organizing thoughts, ideas, and informa
 
 ## Overview
 
-Knowledge Tree is a self-hosted application that helps you organize information hierarchically. Built with PHP and SQLite, it requires no external services or databases. The interactive tree visualization is powered by D3.js, providing smooth zoom, pan, and animations.
+Knowledge Tree is a self-hosted application for building and exploring hierarchical notes. It uses PHP and MySQL for persistence, with a D3.js-powered tree visualization for smooth zooming, panning, and interactive node management.
 
 ## Features
 
 - Interactive tree visualization with D3.js
-- Dark theme with glassmorphism design
-- Unlimited nesting depth
+- Dark dashboard with a glassmorphism-inspired UI
+- Unlimited nesting depth for notes and branches
 - Rich text editing with Markdown support
-- Global search with Ctrl+K
-- Responsive across all devices
-- Secure authentication with bcrypt
-- No external dependencies required
+- Global search with Ctrl+K / Cmd+K
+- Context actions for edit, add child, duplicate, and delete
+- Responsive layout for desktop and mobile
+- Secure authentication and prepared statements
 
 ## Requirements
 
 - PHP 8.0 or higher
-- PDO SQLite extension
-- Apache with mod_rewrite (or compatible web server)
+- MySQL 8.0 or compatible server
+- PDO MySQL extension
+- Apache with `mod_rewrite` or another compatible web server
 
 ## Installation
 
 ### Local Development
 
-1. Clone this repository to your web server directory:
+1. Clone the repository:
 
 ```bash
 git clone https://github.com/yourusername/knowledge-tree.git
 cd knowledge-tree
 ```
 
-2. Ensure the `data` directory is writable:
+2. Create a MySQL database and import the schema:
 
 ```bash
-chmod 755 data/
+mysql -u your_user -p your_database < database.sql
 ```
 
-3. Start the PHP development server:
+3. Update `config.php` with your MySQL credentials.
+
+4. Start the PHP development server:
 
 ```bash
 php -S localhost:8000
 ```
 
-4. Open `http://localhost:8000` in your browser
+5. Open `http://localhost:8000` in your browser.
 
-5. Follow the installation wizard to create your admin account
+6. Follow the setup flow to connect the app to your database and create your account.
 
 ### Shared Hosting
 
-Knowledge Tree is a self-hosted application that helps you organize information hierarchically. Built with PHP and MySQL, it uses a relational database for persistent storage. The interactive tree visualization is powered by D3.js, providing smooth zoom, pan, and animations.
-1. Upload all files to your hosting directory via FTP or file manager
+1. Upload the project files to your hosting account.
+2. Import `database.sql` into your MySQL database.
+3. Configure the database credentials in `config.php`.
+4. Make sure your web server supports PHP and URL rewriting.
+5. Open the site in a browser and complete the setup flow.
 
-2. Set permissions on the `data/` directory to 755
+## Project Structure
+
+```
 knowledge-tree/
-├── index.php              # Application entry point
-├── config.php             # Configuration settings
-│   ├── Core/              # Framework core classes
-│   │   ├── Database.php   # SQLite connection handler
-│   │   ├── Router.php     # URL routing engine
-│   │   ├── Auth.php       # Authentication manager
-│   │   └── Response.php   # HTTP response helpers
-│   ├── Controllers/       # Request handlers
+├── index.php
+├── config.php
+├── setup.php
+├── database.sql
+├── app/
+│   ├── Core/
+│   │   ├── Database.php
+│   │   ├── Router.php
+│   │   ├── Auth.php
+│   │   └── Response.php
+│   ├── Controllers/
 │   │   ├── AuthController.php
 │   │   ├── DashboardController.php
 │   │   └── ApiController.php
-│   ├── Models/            # Data models
+│   ├── Models/
 │   │   ├── User.php
 │   │   └── Node.php
-2. Import `database.sql` into your MySQL database:
+│   └── Views/
+│       ├── 404.php
+│       ├── dashboard.php
+│       ├── layout.php
+│       ├── auth/
+│       │   └── login.php
+│       └── partials/
+│           ├── navbar.php
+│           ├── node-editor.php
+│           └── sidebar.php
 ├── public/
-│   ├── css/               # Stylesheets
-mysql -u your_user -p your_database < database.sql
-│   └── assets/            # Static assets
-└── data/                  # Database storage
+│   ├── css/
+│   ├── js/
+│   └── assets/
+└── data/
 ```
 
 ## Usage
 
 ### Navigation
 
-4. Update `config.php` with your MySQL credentials.
-
-5. Open `http://localhost:8000` in your browser
-- **Zoom**: Mouse wheel or trackpad gesture
-- **Select**: Click on any node
-6. Follow the installation wizard to create your admin account
-- **Context Menu**: Right-click on a node
-- **Search**: Press Ctrl+K (Cmd+K on macOS)
+- Click a node to view its details
+- Right-click a node for edit, add child, duplicate, or delete
+- Use the sidebar to browse branches
+- Use the zoom controls to zoom in, zoom out, or reset the view
+- Press Ctrl+K / Cmd+K to search across notes
 
 ### Keyboard Shortcuts
 
-2. Import `database.sql` into your MySQL database
+| Shortcut | Action |
 |----------|--------|
-3. Configure the MySQL connection in `config.php`
-
-4. Navigate to your domain in a web browser
+| Ctrl+K / Cmd+K | Open search |
 | Ctrl+S | Save current node |
-5. Complete the installation wizard
+| Escape | Close editor or menu |
 | Delete | Remove selected node |
 
 ### Node Operations
 
-- Click the plus icon to add a root node
-- Right-click a node for edit, add child, duplicate, or delete
-- Double-click a node to open the editor
-- Click expand/collapse indicators on nodes with children
-
-## Security
-
-- Bcrypt password hashing
-│   │   ├── Database.php   # MySQL connection handler
-- Prepared SQL statements throughout
-- Output escaping to prevent XSS
-- Secure session configuration
-- Rate limiting on authentication
+- Create a root node from the toolbar or empty state
+- Add a child node from the node details panel or context menu
+- Edit an existing node in the modal editor
+- Duplicate a node and its children
+- Delete a node and its descendants
 
 ## Configuration
 
-Edit `config.php` to adjust:
+Edit `config.php` to adjust your database connection and application settings.
+
+Typical values include:
 
 ```php
-// Session timeout (seconds)
-define('SESSION_LIFETIME', 3600 * 8);
-
-// Password hashing cost
-define('BCRYPT_COST', 12);
-└── database.sql           # MySQL schema and seed data
-// Allow new user registration
-define('ALLOW_REGISTRATION', true);
+define('DB_HOST', '127.0.0.1');
+define('DB_NAME', 'knowledge_tree');
+define('DB_USER', 'root');
+define('DB_PASS', '');
+define('DB_CHARSET', 'utf8mb4');
 ```
+
+## Security
+
+- Password hashing with bcrypt
+- Prepared SQL statements
+- Output escaping to prevent XSS
+- Session-based authentication
 
 ## Browser Support
 
@@ -148,10 +161,10 @@ define('ALLOW_REGISTRATION', true);
 
 ## License
 
-MIT License. See LICENSE file for details.
+MIT License. See the LICENSE file for details.
 
 ## Credits
 
-- [D3.js](https://d3js.org/) - Data visualization library
-- [Font Awesome](https://fontawesome.com/) - Icon toolkit
+- [D3.js](https://d3js.org/) - Tree visualization
+- [Font Awesome](https://fontawesome.com/) - Icons
 - [Inter](https://rsms.me/inter/) - Typeface
