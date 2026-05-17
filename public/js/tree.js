@@ -11,8 +11,9 @@ const TreeVisualization = {
 
     // Configuration
     config: {
-        nodeRadius: 24,
-        nodeSpacing: { x: 200, y: 80 },
+        nodeRadius: 16,
+        nodeRadiusRoot: 12,
+        nodeSpacing: { x: 180, y: 150 },
         duration: 500,
         zoomExtent: [0.1, 4]
     },
@@ -34,6 +35,28 @@ const TreeVisualization = {
 
         // Setup SVG
         this.svg = d3.select(svgElement);
+
+        // Add gradient for flow animation
+        const defs = this.svg.append('defs');
+        const gradient = defs.append('linearGradient')
+            .attr('id', 'flowGradient')
+            .attr('gradientUnits', 'userSpaceOnUse');
+
+        gradient.append('stop')
+            .attr('offset', '0%')
+            .attr('stop-color', '#6366f1')
+            .attr('stop-opacity', '0');
+
+        gradient.append('stop')
+            .attr('offset', '50%')
+            .attr('stop-color', '#818cf8')
+            .attr('stop-opacity', '1');
+
+        gradient.append('stop')
+            .attr('offset', '100%')
+            .attr('stop-color', '#6366f1')
+            .attr('stop-opacity', '0');
+
         this.g = this.svg.append('g').attr('class', 'tree-group');
 
         // Setup zoom
@@ -104,6 +127,7 @@ const TreeVisualization = {
             }
 
             if (this.treeData.length === 0) {
+                this.clearTree();
                 this.showEmptyState();
                 return;
             }
@@ -146,9 +170,12 @@ const TreeVisualization = {
         const nodes = treeData.descendants();
         const links = treeData.links();
 
-        // Normalize for fixed-depth
+        // Remove any stale flow paths from previous renders
+        this.g.selectAll('.tree-link-flow').remove();
+
+        // Normalize for top-down layout
         nodes.forEach(d => {
-            d.y = d.depth * this.config.nodeSpacing.x;
+            d.y = d.depth * this.config.nodeSpacing.y;
         });
 
         // ---- LINKS ----
@@ -158,7 +185,7 @@ const TreeVisualization = {
         // Enter links
         const linkEnter = link.enter()
             .insert('path', '.tree-node')
-            .attr('class', 'tree-link')
+            .attr('class', 'tree-link animate')
             .attr('d', () => {
                 const o = { x: source.x0 || 0, y: source.y0 || 0 };
                 return this.diagonal(o, o);
@@ -166,6 +193,7 @@ const TreeVisualization = {
 
         // Update links
         const linkUpdate = linkEnter.merge(link);
+        linkUpdate.classed('animate', true);
         linkUpdate.transition()
             .duration(this.config.duration)
             .attr('d', d => this.diagonal(d.source, d.target));
@@ -188,7 +216,7 @@ const TreeVisualization = {
         const nodeEnter = node.enter()
             .append('g')
             .attr('class', d => `tree-node ${d.data.id === this.selectedNode ? 'selected' : ''}`)
-            .attr('transform', () => `translate(${source.y0 || 0},${source.x0 || 0})`)
+            .attr('transform', () => `translate(${source.x0 || 0},${source.y0 || 0})`)
             .on('click', (event, d) => {
                 event.stopPropagation();
                 this.onNodeClick(d);
@@ -203,23 +231,21 @@ const TreeVisualization = {
         nodeEnter.append('circle')
             .attr('class', d => `node-circle ${d.depth === 0 ? 'node-circle-root' : ''}`)
             .attr('r', 0)
-            .attr('fill', d => d.data.color || '#6366f1')
-            .attr('stroke', 'rgba(255,255,255,0.2)')
-            .attr('stroke-width', d => d.depth === 0 ? 3 : 2);
+            .attr('fill', d => d.data.color || '#6366f1');
 
-        // Node icon (simplified as text)
+        // Node icon
         nodeEnter.append('text')
             .attr('class', 'node-icon')
             .attr('text-anchor', 'middle')
             .attr('dy', '0.35em')
             .attr('fill', 'white')
-            .attr('font-size', '10px')
+            .attr('font-size', '9px')
             .text(d => this.getNodeIcon(d.data.icon));
 
         // Node label
         nodeEnter.append('text')
             .attr('class', d => `node-label ${d.depth === 0 ? 'node-label-root' : ''}`)
-            .attr('dy', d => d.children || d._children ? '-2em' : '2.5em')
+            .attr('dy', d => d.children || d._children ? '-2.1em' : '2.8em')
             .attr('text-anchor', 'middle')
             .text(d => this.truncateLabel(d.data.title))
             .style('fill-opacity', 0);
@@ -228,7 +254,7 @@ const TreeVisualization = {
         const toggleEnter = nodeEnter.filter(d => d.children || d._children)
             .append('g')
             .attr('class', d => `node-toggle ${d._children ? 'collapsed' : ''}`)
-            .attr('transform', `translate(${this.config.nodeRadius + 8}, 0)`)
+            .attr('transform', `translate(0, ${this.config.nodeRadius + 14})`)
             .on('click', (event, d) => {
                 event.stopPropagation();
                 this.toggleNode(d);
@@ -236,7 +262,7 @@ const TreeVisualization = {
 
         toggleEnter.append('circle')
             .attr('class', 'node-toggle-circle')
-            .attr('r', 10);
+            .attr('r', 9);
 
         toggleEnter.append('text')
             .attr('class', 'node-toggle-icon')
@@ -251,12 +277,12 @@ const TreeVisualization = {
 
         nodeUpdate.transition()
             .duration(this.config.duration)
-            .attr('transform', d => `translate(${d.y},${d.x})`);
+            .attr('transform', d => `translate(${d.x},${d.y})`);
 
         nodeUpdate.select('.node-circle')
             .transition()
             .duration(this.config.duration)
-            .attr('r', this.config.nodeRadius)
+            .attr('r', d => d.depth === 0 ? this.config.nodeRadiusRoot : this.config.nodeRadius)
             .attr('fill', d => d.data.color || '#6366f1');
 
         nodeUpdate.select('.node-label')
@@ -274,7 +300,7 @@ const TreeVisualization = {
         const nodeExit = node.exit()
             .transition()
             .duration(this.config.duration)
-            .attr('transform', () => `translate(${source.y},${source.x})`)
+            .attr('transform', () => `translate(${source.x},${source.y})`)
             .remove();
 
         nodeExit.select('.node-circle')
@@ -294,10 +320,7 @@ const TreeVisualization = {
      * Generate diagonal path between two points
      */
     diagonal(s, d) {
-        return `M ${s.y} ${s.x}
-                C ${(s.y + d.y) / 2} ${s.x},
-                  ${(s.y + d.y) / 2} ${d.x},
-                  ${d.y} ${d.x}`;
+        return `M ${s.x} ${s.y} L ${d.x} ${d.y}`;
     },
 
     /**
@@ -340,6 +363,18 @@ const TreeVisualization = {
         }
 
         this.update(d);
+    },
+
+    /**
+     * Toggle node by ID (for sidebar)
+     */
+    toggleNodeById(nodeId) {
+        if (!this.root) return;
+
+        const node = this.root.descendants().find(d => d.data.id === nodeId);
+        if (node) {
+            this.toggleNode(node);
+        }
     },
 
     /**
@@ -528,6 +563,18 @@ const TreeVisualization = {
     },
 
     /**
+     * Clear the rendered tree and reset internal state
+     */
+    clearTree() {
+        if (this.g) {
+            this.g.selectAll('*').remove();
+        }
+
+        this.root = null;
+        this.selectedNode = null;
+    },
+
+    /**
      * Hide empty state
      */
     hideEmptyState() {
@@ -584,17 +631,31 @@ const TreeVisualization = {
         try {
             const response = await API.getTree();
             this.treeData = response.data || [];
+
+            if (this.treeData.length === 0) {
+                this.clearTree();
+                this.showEmptyState();
+                return this.treeData;
+            }
+
+            this.hideEmptyState();
             this.renderTree();
+            return this.treeData;
         } catch (error) {
             console.error('Failed to refresh tree:', error);
+            return [];
         }
     }
 };
 
 // Initialize on DOM ready
-document.addEventListener('DOMContentLoaded', () => {
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => {
+        TreeVisualization.init();
+    });
+} else {
     TreeVisualization.init();
-});
+}
 
 // Make TreeVisualization globally available
 window.TreeVisualization = TreeVisualization;

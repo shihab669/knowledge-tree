@@ -5,7 +5,128 @@
 /* Tree Nodes */
 .tree-node {
     cursor: pointer;
-    transition: all 0.2s ease;
+}
+
+.tree-node:hover .node-circle {
+    filter: brightness(1.15);
+}
+
+.tree-node.selected .node-circle {
+    stroke: white;
+    stroke-width: 2.5;
+    filter: drop-shadow(0 0 6px rgba(99, 102, 241, 0.4));
+}
+
+.tree-node.selected .node-label {
+    font-weight: 600;
+    fill: white;
+}
+
+/* Node Circle */
+.node-circle {
+    stroke: rgba(255, 255, 255, 0.15);
+    stroke-width: 1.5;
+}
+
+.node-circle-root {
+    stroke-width: 2;
+    stroke: rgba(255, 255, 255, 0.25);
+}
+
+/* Node Label */
+.node-label {
+    font-family: 'Inter', -apple-system, sans-serif;
+    font-size: 11px;
+    font-weight: 500;
+    fill: #cbd5e1;
+    pointer-events: none;
+}
+
+.node-label-root {
+    font-size: 13px;
+    font-weight: 600;
+    fill: #e2e8f0;
+}
+
+/* Node Icon */
+.node-icon {
+    font-family: 'Font Awesome 6 Free';
+    font-weight: 900;
+    font-size: 7px;
+    fill: white;
+    pointer-events: none;
+}
+
+/* Links */
+.tree-link {
+    fill: none;
+    stroke: rgba(99, 102, 241, 0.2);
+    stroke-width: 1.5;
+}
+
+.tree-link.animate {
+    stroke-dasharray: 8 12;
+    stroke-linecap: round;
+    animation: flowPulse 1.5s linear infinite;
+}
+
+.tree-link:hover {
+    stroke: rgba(99, 102, 241, 0.4);
+}
+
+/* Electricity Flow Animation */
+.tree-link-flow {
+    fill: none;
+    stroke: url(#flowGradient);
+    stroke-width: 1.5;
+    stroke-linecap: round;
+    opacity: 0.5;
+}
+
+@keyframes flowPulse {
+    0% {
+        stroke-dashoffset: 40;
+    }
+    100% {
+        stroke-dashoffset: 0;
+    }
+}
+
+.tree-link-flow.animate {
+    stroke-dasharray: 6 14;
+    animation: flowPulse 1.2s linear infinite;
+}
+
+/* Expand/Collapse Toggle */
+.node-toggle {
+    cursor: pointer;
+    transform-box: fill-box;
+    transform-origin: center;
+}
+
+.node-toggle:hover .node-toggle-circle {
+    stroke: rgba(99, 102, 241, 0.6);
+}
+
+.node-toggle-circle {
+    fill: var(--bg-secondary, #1a1a2e);
+    stroke: rgba(148, 163, 184, 0.3);
+    stroke-width: 1.5;
+    transition: stroke 0.2s ease, stroke-width 0.2s ease, fill 0.2s ease;
+}
+
+.node-toggle-icon {
+    fill: #94a3b8;
+    font-size: 8px;
+    pointer-events: none;
+    dominant-baseline: middle;
+    text-anchor: middle;
+    transform-box: fill-box;
+    transform-origin: center;
+}
+
+.node-toggle.collapsed .node-toggle-icon {
+    transform: none;
 }
 
 .tree-node:hover .node-circle {
@@ -58,7 +179,7 @@
 .node-icon {
     font-family: 'Font Awesome 6 Free';
     font-weight: 900;
-    font-size: 10px;
+    font-size: 7px;
     fill: white;
     pointer-events: none;
 }
@@ -66,14 +187,43 @@
 /* Links */
 .tree-link {
     fill: none;
-    stroke: rgba(99, 102, 241, 0.3);
+    stroke: rgba(99, 102, 241, 0.25);
     stroke-width: 2;
     transition: all 0.2s ease;
 }
 
+.tree-link.animate {
+    stroke-dasharray: 8 12;
+    stroke-linecap: round;
+    animation: flowPulse 1.5s linear infinite;
+}
+
 .tree-link:hover {
-    stroke: rgba(99, 102, 241, 0.6);
-    stroke-width: 3;
+    stroke: rgba(99, 102, 241, 0.5);
+    stroke-width: 2.5;
+}
+
+/* Electricity Flow Animation */
+.tree-link-flow {
+    fill: none;
+    stroke: url(#flowGradient);
+    stroke-width: 2;
+    stroke-linecap: round;
+    opacity: 0.6;
+}
+
+@keyframes flowPulse {
+    0% {
+        stroke-dashoffset: 40;
+    }
+    100% {
+        stroke-dashoffset: 0;
+    }
+}
+
+.tree-link-flow.animate {
+    stroke-dasharray: 8 12;
+    animation: flowPulse 1.5s linear infinite;
 }
 
 /* Link Path Styles */
@@ -98,28 +248,33 @@
 /* Expand/Collapse Toggle */
 .node-toggle {
     cursor: pointer;
-    transition: all 0.2s ease;
+    transform-box: fill-box;
+    transform-origin: center;
 }
 
 .node-toggle:hover {
-    transform: scale(1.2);
+    filter: drop-shadow(0 0 6px rgba(99, 102, 241, 0.25));
 }
 
 .node-toggle-circle {
     fill: var(--bg-secondary, #1a1a2e);
     stroke: rgba(99, 102, 241, 0.4);
     stroke-width: 2;
+    transition: stroke 0.2s ease, stroke-width 0.2s ease, fill 0.2s ease;
 }
 
 .node-toggle-icon {
     fill: #94a3b8;
     font-size: 10px;
     pointer-events: none;
-    transition: transform 0.2s ease;
+    dominant-baseline: middle;
+    text-anchor: middle;
+    transform-box: fill-box;
+    transform-origin: center;
 }
 
 .node-toggle.collapsed .node-toggle-icon {
-    transform: rotate(180deg);
+    transform: none;
 }
 
 /* Node Tooltip */
@@ -208,6 +363,12 @@
     z-index: 50;
 }
 
+@media (max-width: 768px) {
+    .tree-minimap {
+        display: none;
+    }
+}
+
 .minimap-viewport {
     position: absolute;
     border: 2px solid rgba(99, 102, 241, 0.5);
@@ -274,6 +435,12 @@
     font-size: 0.75rem;
     color: var(--text-muted, #64748b);
     z-index: 50;
+}
+
+@media (max-width: 768px) {
+    .tree-zoom-info {
+        display: none;
+    }
 }
 
 /* Node Count Badge */

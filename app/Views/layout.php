@@ -15,18 +15,18 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 
     <!-- Styles -->
-    <link rel="stylesheet" href="/css/main.css">
-    <link rel="stylesheet" href="/css/tree.css">
-    <link rel="stylesheet" href="/css/animations.css">
+    <link rel="stylesheet" href="/public/css/main.css">
+    <link rel="stylesheet" href="/public/css/tree.css">
+    <link rel="stylesheet" href="/public/css/animations.css">
 
     <!-- Favicon -->
-    <link rel="icon" type="image/svg+xml" href="/assets/favicon.svg">
+    <link rel="icon" type="image/svg+xml" href="/public/assets/favicon.svg">
 </head>
 <body>
     <?= $content ?>
     <!-- Scripts -->
-    <script src="/js/utils.js"></script>
-    <script src="/js/api.js"></script>
-    <script src="/js/app.js"></script>
+    <script src="/public/js/utils.js"></script>
+    <script src="/public/js/api.js"></script>
+    <script src="/public/js/app.js"></script>
 </body>
 </html>

@@ -4,7 +4,7 @@
             <i class="fas fa-bars"></i>
         </button>
         <div class="navbar-brand">
-            <svg width="28" height="28" viewBox="0 0 48 48" fill="none">
+            <svg width="24" height="24" viewBox="0 0 48 48" fill="none">
                 <circle cx="24" cy="12" r="6" fill="#6366f1"/>
                 <circle cx="12" cy="32" r="5" fill="#818cf8"/>
                 <circle cx="24" cy="32" r="5" fill="#818cf8"/>
@@ -20,24 +20,13 @@
     <div class="navbar-center">
         <div class="search-box">
             <i class="fas fa-search"></i>
-            <input
-                type="text"
-                id="globalSearch"
-                placeholder="Search nodes... (Ctrl+K)"
-                autocomplete="off"
-            >
+            <input type="text" id="globalSearch" placeholder="Search..." autocomplete="off">
             <kbd>Ctrl+K</kbd>
             <div class="search-results" id="searchResults"></div>
         </div>
     </div>
 
     <div class="navbar-right">
-        <button class="btn-icon" id="addRootNode" title="Add root node">
-            <i class="fas fa-plus"></i>
-        </button>
-        <button class="btn-icon" id="toggleView" title="Toggle view mode">
-            <i class="fas fa-expand"></i>
-        </button>
         <div class="user-menu">
             <button class="user-avatar" id="userMenuBtn">
                 <span class="avatar-text"><?= strtoupper(substr($username ?? 'U', 0, 1)) ?></span>

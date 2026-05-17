@@ -7,51 +7,24 @@
         <?php include __DIR__ . '/partials/sidebar.php'; ?>
 
         <main class="main-content" id="mainContent">
-            <!-- Welcome Section -->
-            <div class="welcome-section" id="welcomeSection">
-                <div class="welcome-card">
-                    <div class="welcome-text">
-                        <h1>Welcome back, <span class="gradient-text"><?= htmlspecialchars($username ?? 'User') ?></span></h1>
-                        <p>Manage and organize your knowledge base.</p>
-                    </div>
-                    <div class="welcome-stats">
-                        <div class="stat-card">
-                            <div class="stat-icon">
-                                <i class="fas fa-circle-nodes"></i>
-                            </div>
-                            <div class="stat-info">
-                                <span class="stat-value"><?= $totalNodes ?? 0 ?></span>
-                                <span class="stat-label">Total Nodes</span>
-                            </div>
-                        </div>
-                        <div class="stat-card">
-                            <div class="stat-icon">
-                                <i class="fas fa-clock"></i>
-                            </div>
-                            <div class="stat-info">
-                                <span class="stat-value"><?= count($recentNodes ?? []) ?></span>
-                                <span class="stat-label">Recent</span>
-                            </div>
-                        </div>
-                    </div>
+            <!-- Toolbar Section -->
+            <div class="toolbar-section">
+                <div class="toolbar-left">
+                    <span class="toolbar-title"><?= htmlspecialchars($username ?? 'User') ?></span>
+                    <span class="toolbar-subtitle">Knowledge Base</span>
                 </div>
-
-                <div class="quick-actions">
-                    <button class="action-card" onclick="createRootNode()">
-                        <i class="fas fa-plus-circle"></i>
-                        <span>New Node</span>
+                <div class="toolbar-actions">
+                    <button class="toolbar-action" onclick="createRootNode(event)" title="New Node">
+                        <i class="fas fa-plus"></i>
                     </button>
-                    <button class="action-card" onclick="expandAllNodes()">
-                        <i class="fas fa-expand-arrows-alt"></i>
-                        <span>Expand All</span>
+                    <button class="toolbar-action" onclick="expandAllNodes()" title="Expand All">
+                        <i class="fas fa-expand"></i>
                     </button>
-                    <button class="action-card" onclick="collapseAllNodes()">
-                        <i class="fas fa-compress-arrows-alt"></i>
-                        <span>Collapse All</span>
+                    <button class="toolbar-action" onclick="collapseAllNodes()" title="Collapse All">
+                        <i class="fas fa-compress"></i>
                     </button>
-                    <button class="action-card" onclick="resetView()">
-                        <i class="fas fa-sync-alt"></i>
-                        <span>Reset View</span>
+                    <button class="toolbar-action" onclick="resetView()" title="Reset View">
+                        <i class="fas fa-redo"></i>
                     </button>
                 </div>
             </div>
@@ -92,7 +65,7 @@
                     </div>
                     <h2>Start Your Knowledge Tree</h2>
                     <p>Create your first node to begin organizing your thoughts and ideas.</p>
-                    <button class="btn btn-primary btn-lg" onclick="createRootNode()">
+                    <button class="btn btn-primary btn-lg" onclick="createRootNode(event)">
                         <i class="fas fa-plus"></i>
                         Create First Node
                     </button>
@@ -125,32 +98,11 @@
 
 <!-- Context Menu -->
 <div class="context-menu" id="contextMenu">
-    <button class="context-item" data-action="edit">
-        <i class="fas fa-edit"></i>
-        Edit Node
-    </button>
-    <button class="context-item" data-action="addChild">
-        <i class="fas fa-plus"></i>
-        Add Child
-    </button>
-    <button class="context-item" data-action="duplicate">
-        <i class="fas fa-copy"></i>
-        Duplicate
-    </button>
+    <button class="context-item" data-action="edit">Edit</button>
+    <button class="context-item" data-action="addChild">Add Child</button>
+    <button class="context-item" data-action="duplicate">Duplicate</button>
     <div class="context-divider"></div>
-    <button class="context-item" data-action="expand">
-        <i class="fas fa-expand"></i>
-        Expand Branch
-    </button>
-    <button class="context-item" data-action="collapse">
-        <i class="fas fa-compress"></i>
-        Collapse Branch
-    </button>
-    <div class="context-divider"></div>
-    <button class="context-item context-danger" data-action="delete">
-        <i class="fas fa-trash"></i>
-        Delete Node
-    </button>
+    <button class="context-item context-danger" data-action="delete">Delete</button>
 </div>
 
 <!-- Toast Container -->
@@ -165,5 +117,5 @@ window.APP_DATA = {
 </script>
 
 <script src="https://d3js.org/d3.v7.min.js"></script>
-<script src="/js/tree.js"></script>
-<script src="/js/editor.js"></script>
+<script src="/public/js/tree.js"></script>
+<script src="/public/js/editor.js"></script>

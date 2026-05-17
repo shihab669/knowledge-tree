@@ -4,7 +4,7 @@ A visual knowledge management system for organizing thoughts, ideas, and informa
 
 ![Version](https://img.shields.io/badge/Version-1.0.0-blueviolet)
 ![PHP](https://img.shields.io/badge/PHP-8.0+-777BB4)
-![SQLite](https://img.shields.io/badge/SQLite-3-003B57)
+![MySQL](https://img.shields.io/badge/MySQL-8.0-4479A1)
 ![License](https://img.shields.io/badge/License-MIT-green)
 
 ## Overview
@@ -57,23 +57,13 @@ php -S localhost:8000
 
 ### Shared Hosting
 
+Knowledge Tree is a self-hosted application that helps you organize information hierarchically. Built with PHP and MySQL, it uses a relational database for persistent storage. The interactive tree visualization is powered by D3.js, providing smooth zoom, pan, and animations.
 1. Upload all files to your hosting directory via FTP or file manager
 
 2. Set permissions on the `data/` directory to 755
-
-3. Navigate to your domain in a web browser
-
-4. Complete the installation wizard
-
-## Project Structure
-
-```
 knowledge-tree/
 ├── index.php              # Application entry point
 ├── config.php             # Configuration settings
-├── setup.php              # Installation wizard
-├── .htaccess              # URL rewriting rules
-├── app/
 │   ├── Core/              # Framework core classes
 │   │   ├── Database.php   # SQLite connection handler
 │   │   ├── Router.php     # URL routing engine
@@ -86,10 +76,10 @@ knowledge-tree/
 │   ├── Models/            # Data models
 │   │   ├── User.php
 │   │   └── Node.php
-│   └── Views/             # Page templates
+2. Import `database.sql` into your MySQL database:
 ├── public/
 │   ├── css/               # Stylesheets
-│   ├── js/                # JavaScript files
+mysql -u your_user -p your_database < database.sql
 │   └── assets/            # Static assets
 └── data/                  # Database storage
 ```
@@ -98,19 +88,24 @@ knowledge-tree/
 
 ### Navigation
 
-- **Pan**: Click and drag on empty canvas
+4. Update `config.php` with your MySQL credentials.
+
+5. Open `http://localhost:8000` in your browser
 - **Zoom**: Mouse wheel or trackpad gesture
 - **Select**: Click on any node
+6. Follow the installation wizard to create your admin account
 - **Context Menu**: Right-click on a node
 - **Search**: Press Ctrl+K (Cmd+K on macOS)
 
 ### Keyboard Shortcuts
 
-| Shortcut | Action |
+2. Import `database.sql` into your MySQL database
 |----------|--------|
-| Ctrl+K | Open search |
+3. Configure the MySQL connection in `config.php`
+
+4. Navigate to your domain in a web browser
 | Ctrl+S | Save current node |
-| Escape | Close editor or menu |
+5. Complete the installation wizard
 | Delete | Remove selected node |
 
 ### Node Operations
@@ -123,7 +118,7 @@ knowledge-tree/
 ## Security
 
 - Bcrypt password hashing
-- CSRF token validation on all forms
+│   │   ├── Database.php   # MySQL connection handler
 - Prepared SQL statements throughout
 - Output escaping to prevent XSS
 - Secure session configuration
@@ -139,7 +134,7 @@ define('SESSION_LIFETIME', 3600 * 8);
 
 // Password hashing cost
 define('BCRYPT_COST', 12);
-
+└── database.sql           # MySQL schema and seed data
 // Allow new user registration
 define('ALLOW_REGISTRATION', true);
 ```

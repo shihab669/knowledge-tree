@@ -25,7 +25,12 @@ spl_autoload_register(function ($class) {
 });
 
 // Check if setup is needed
-if (!file_exists(DB_PATH)) {
+try {
+    $dsn = sprintf('mysql:host=%s;dbname=%s;charset=%s', DB_HOST, DB_NAME, DB_CHARSET);
+    $checkDb = new PDO($dsn, DB_USER, DB_PASS);
+    $checkDb->query("SELECT COUNT(*) FROM users");
+    $checkDb = null;
+} catch (Exception $e) {
     header('Location: /setup.php');
     exit;
 }
@@ -53,8 +58,6 @@ $router->get('/', function() {
 
 $router->get('/login', [AuthController::class, 'showLogin']);
 $router->post('/login', [AuthController::class, 'login']);
-$router->get('/register', [AuthController::class, 'showRegister']);
-$router->post('/register', [AuthController::class, 'register']);
 $router->get('/logout', [AuthController::class, 'logout']);
 
 // Protected Routes

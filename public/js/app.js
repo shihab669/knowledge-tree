@@ -29,21 +29,52 @@ const App = {
         }
 
         // Close sidebar on overlay click (mobile)
-        document.addEventListener('click', (e) => {
-            const sidebar = document.getElementById('sidebar');
-            const sidebarToggle = document.getElementById('sidebarToggle');
-            if (sidebar && sidebar.classList.contains('active')) {
-                if (!sidebar.contains(e.target) && !sidebarToggle.contains(e.target)) {
-                    sidebar.classList.remove('active');
-                }
-            }
-        });
+        const sidebarOverlay = document.getElementById('sidebarOverlay');
+        if (sidebarOverlay) {
+            sidebarOverlay.addEventListener('click', () => this.toggleSidebar());
+        }
 
         // Add root node buttons
         const addRootNode = document.getElementById('addRootNode');
         const addRootNodeSidebar = document.getElementById('addRootNodeSidebar');
-        if (addRootNode) addRootNode.addEventListener('click', () => this.createRootNode());
-        if (addRootNodeSidebar) addRootNodeSidebar.addEventListener('click', () => this.createRootNode());
+        if (addRootNode) addRootNode.addEventListener('click', (e) => this.createRootNode(e));
+        if (addRootNodeSidebar) addRootNodeSidebar.addEventListener('click', (e) => this.createRootNode(e));
+
+        // Close node panel
+        const panelClose = document.getElementById('panelClose');
+        if (panelClose) {
+            panelClose.addEventListener('click', () => {
+                const nodePanel = document.getElementById('nodePanel');
+                if (nodePanel) nodePanel.classList.remove('active');
+            });
+        }
+
+        // Close panel when clicking on main content area
+        const mainContent = document.getElementById('mainContent');
+        const treeContainer = document.getElementById('treeContainer');
+        if (mainContent) {
+            mainContent.addEventListener('click', (e) => {
+                const nodePanel = document.getElementById('nodePanel');
+                const clickedInPanel = nodePanel && nodePanel.contains(e.target);
+                const clickedInTree = treeContainer && treeContainer.contains(e.target);
+                const clickedOnNode = e.target.closest('.tree-node');
+
+                if (nodePanel && nodePanel.classList.contains('active') && !clickedInPanel) {
+                    if (clickedInTree && !clickedOnNode) {
+                        nodePanel.classList.remove('active');
+                    }
+                }
+
+                // Close node editor when clicking outside
+                const editorOverlay = document.getElementById('nodeEditorOverlay');
+                const editor = document.getElementById('nodeEditor');
+                if (editorOverlay && editorOverlay.classList.contains('active') && !editor.contains(e.target)) {
+                    if (window.NodeEditor) {
+                        window.NodeEditor.closeEditor();
+                    }
+                }
+            });
+        }
 
         // Close context menu on click outside
         document.addEventListener('click', (e) => {
@@ -170,8 +201,10 @@ const App = {
      */
     toggleSidebar() {
         const sidebar = document.getElementById('sidebar');
+        const overlay = document.getElementById('sidebarOverlay');
         if (sidebar) {
             sidebar.classList.toggle('active');
+            if (overlay) overlay.classList.toggle('active');
         }
     },
 
@@ -188,6 +221,12 @@ const App = {
         if (userDropdown) userDropdown.classList.remove('active');
         if (searchResults) searchResults.classList.remove('active');
         if (nodePanel) nodePanel.classList.remove('active');
+
+        // Close sidebar on mobile
+        const sidebar = document.getElementById('sidebar');
+        const overlay = document.getElementById('sidebarOverlay');
+        if (sidebar) sidebar.classList.remove('active');
+        if (overlay) overlay.classList.remove('active');
     },
 
     /**
@@ -265,20 +304,32 @@ const App = {
                 </div>
 
                 <div class="node-detail-actions">
-                    <button class="btn btn-primary btn-sm" onclick="NodeEditor.editNode(${node.id})">
+                    <button class="btn btn-primary btn-sm" data-action="edit" data-node-id="${node.id}">
                         <i class="fas fa-edit"></i> Edit
                     </button>
-                    <button class="btn btn-secondary btn-sm" onclick="App.createChildNode(${node.id})">
+                    <button class="btn btn-secondary btn-sm" data-action="addChild" data-node-id="${node.id}">
                         <i class="fas fa-plus"></i> Add Child
                     </button>
-                    <button class="btn btn-secondary btn-sm" onclick="App.duplicateNode(${node.id})">
+                    <button class="btn btn-secondary btn-sm" data-action="duplicate" data-node-id="${node.id}">
                         <i class="fas fa-copy"></i> Duplicate
                     </button>
-                    <button class="btn btn-danger btn-sm" onclick="App.deleteNode(${node.id})">
+                    <button class="btn btn-danger btn-sm" data-action="delete" data-node-id="${node.id}">
                         <i class="fas fa-trash"></i> Delete
                     </button>
                 </div>
             `;
+
+            // Bind action buttons
+            panelBody.querySelectorAll('.node-detail-actions .btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+
+                    const action = btn.dataset.action;
+                    const nodeId = parseInt(btn.dataset.nodeId);
+                    this.handlePanelAction(action, nodeId);
+                });
+            });
         } catch (error) {
             panelBody.innerHTML = `
                 <div class="panel-loading">
@@ -291,7 +342,10 @@ const App = {
     /**
      * Create root node
      */
-    createRootNode() {
+    createRootNode(event = null) {
+        event?.preventDefault();
+        event?.stopPropagation();
+
         if (window.NodeEditor) {
             window.NodeEditor.openEditor(null, null);
         }
@@ -300,9 +354,119 @@ const App = {
     /**
      * Create child node
      */
-    createChildNode(parentId) {
+    createChildNode(parentId, event = null) {
+        event?.preventDefault();
+        event?.stopPropagation();
+
         if (window.NodeEditor) {
             window.NodeEditor.openEditor(null, parentId);
+        }
+    },
+
+    /**
+     * Refresh the dashboard tree and sidebar without a full page reload
+     */
+    async refreshTreeView(selectedNodeId = null) {
+        let treeData = [];
+
+        if (window.TreeVisualization) {
+            treeData = await window.TreeVisualization.refresh() || [];
+        }
+
+        this.renderSidebarTree(treeData);
+
+        if (selectedNodeId !== null && selectedNodeId !== undefined) {
+            this.selectNode(selectedNodeId);
+        }
+    },
+
+    /**
+     * Render sidebar tree from live data
+     */
+    renderSidebarTree(nodes) {
+        const sidebar = document.getElementById('treeSidebar');
+        if (!sidebar) return;
+
+        if (!Array.isArray(nodes) || nodes.length === 0) {
+            sidebar.innerHTML = `
+                <div class="sidebar-empty">
+                    <p>No nodes</p>
+                    <button class="btn btn-sm btn-primary" onclick="createRootNode(event)">
+                        Create Node
+                    </button>
+                </div>
+            `;
+            this.updateSidebarCount(0);
+            return;
+        }
+
+        sidebar.innerHTML = this.buildSidebarTree(nodes);
+        this.updateSidebarCount(this.countTreeNodes(nodes));
+    },
+
+    /**
+     * Build nested sidebar tree markup
+     */
+    buildSidebarTree(nodes, depth = 0) {
+        if (!Array.isArray(nodes) || nodes.length === 0) return '';
+
+        let html = `<ul class="tree-list${depth > 0 ? ' tree-nested' : ''}">`;
+
+        nodes.forEach(node => {
+            const hasChildren = Array.isArray(node.children) && node.children.length > 0;
+            const isCollapsed = Boolean(node.is_collapsed);
+
+            html += '<li class="tree-item">';
+            html += `<div class="tree-node-row" data-node-id="${node.id}">`;
+
+            if (hasChildren) {
+                html += `
+                    <button class="tree-toggle${isCollapsed ? ' collapsed' : ''}" onclick="toggleTreeNode(this, ${node.id})">
+                        <i class="fas fa-chevron-down"></i>
+                    </button>
+                `;
+            } else {
+                html += '<span class="tree-spacer"></span>';
+            }
+
+            html += `
+                <a href="#" class="tree-label" onclick="selectNode(${node.id}); return false;">
+                    <i class="fas ${Utils.escapeHtml(node.icon || 'fa-circle')}" style="color: ${Utils.escapeHtml(node.color || '#6366f1')}"></i>
+                    <span>${Utils.escapeHtml(node.title)}</span>
+                </a>
+            `;
+
+            html += '</div>';
+
+            if (hasChildren && !isCollapsed) {
+                html += this.buildSidebarTree(node.children, depth + 1);
+            }
+
+            html += '</li>';
+        });
+
+        html += '</ul>';
+        return html;
+    },
+
+    /**
+     * Count nodes for the sidebar footer
+     */
+    countTreeNodes(nodes) {
+        if (!Array.isArray(nodes) || nodes.length === 0) return 0;
+
+        return nodes.reduce((count, node) => {
+            return count + 1 + this.countTreeNodes(node.children || []);
+        }, 0);
+    },
+
+    /**
+     * Update the sidebar node count
+     */
+    updateSidebarCount(count) {
+        const sidebarCount = document.querySelector('.sidebar-footer span');
+        if (sidebarCount) {
+            sidebarCount.textContent = `${count} nodes`;
         }
     },
 
@@ -322,13 +486,11 @@ const App = {
             const panel = document.getElementById('nodePanel');
             if (panel) panel.classList.remove('active');
 
-            // Refresh tree
-            if (window.TreeVisualization) {
-                window.TreeVisualization.refresh();
+            if (this.selectedNodeId === nodeId) {
+                this.selectedNodeId = null;
             }
 
-            // Reload page to update sidebar
-            window.location.reload();
+            await this.refreshTreeView();
         } catch (error) {
             this.showToast('Failed to delete node', 'error');
         }
@@ -339,17 +501,37 @@ const App = {
      */
     async duplicateNode(nodeId) {
         try {
-            await API.duplicateNode(nodeId);
+            const response = await API.duplicateNode(nodeId);
+            const duplicatedNode = response.data;
             this.showToast('Node duplicated successfully', 'success');
 
-            // Refresh tree
-            if (window.TreeVisualization) {
-                window.TreeVisualization.refresh();
-            }
-
-            window.location.reload();
+            await this.refreshTreeView(duplicatedNode?.id ?? null);
         } catch (error) {
             this.showToast('Failed to duplicate node', 'error');
+        }
+    },
+
+    /**
+     * Handle panel action buttons
+     */
+    handlePanelAction(action, nodeId) {
+        switch (action) {
+            case 'edit':
+                if (window.NodeEditor) {
+                    window.NodeEditor.editNode(nodeId);
+                }
+                break;
+            case 'addChild':
+                if (window.NodeEditor) {
+                    window.NodeEditor.openEditor(null, nodeId);
+                }
+                break;
+            case 'duplicate':
+                this.duplicateNode(nodeId);
+                break;
+            case 'delete':
+                this.deleteNode(nodeId);
+                break;
         }
     },
 
@@ -416,9 +598,60 @@ const App = {
 };
 
 // Initialize on DOM ready
-document.addEventListener('DOMContentLoaded', () => {
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => {
+        App.init();
+    });
+} else {
     App.init();
-});
+}
 
 // Make App globally available
 window.App = App;
+
+// Global function wrappers for onclick handlers
+function createRootNode(event) {
+    App.createRootNode(event);
+}
+
+function createChildNode(parentId, event) {
+    App.createChildNode(parentId, event);
+}
+
+function expandAllNodes() {
+    App.expandAllNodes();
+}
+
+function collapseAllNodes() {
+    App.collapseAllNodes();
+}
+
+function resetView() {
+    App.resetView();
+}
+
+function selectNode(nodeId) {
+    App.selectNode(nodeId);
+}
+
+function toggleTreeNode(el, nodeId) {
+    if (!el) return;
+
+    const treeItem = el.closest('.tree-item');
+    const childList = treeItem
+        ? Array.from(treeItem.children).find((child) => child.classList && child.classList.contains('tree-list'))
+        : null;
+    const shouldCollapse = !el.classList.contains('collapsed');
+
+    el.classList.toggle('collapsed', shouldCollapse);
+    el.setAttribute('aria-expanded', String(!shouldCollapse));
+
+    if (childList) {
+        childList.hidden = shouldCollapse;
+        childList.style.display = shouldCollapse ? 'none' : '';
+    }
+
+    if (window.TreeVisualization) {
+        window.TreeVisualization.toggleNodeById(nodeId);
+    }
+}
