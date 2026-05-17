@@ -1,0 +1,162 @@
+# Knowledge Tree
+
+A visual knowledge management system for organizing thoughts, ideas, and information in interactive tree structures.
+
+![Version](https://img.shields.io/badge/Version-1.0.0-blueviolet)
+![PHP](https://img.shields.io/badge/PHP-8.0+-777BB4)
+![SQLite](https://img.shields.io/badge/SQLite-3-003B57)
+![License](https://img.shields.io/badge/License-MIT-green)
+
+## Overview
+
+Knowledge Tree is a self-hosted application that helps you organize information hierarchically. Built with PHP and SQLite, it requires no external services or databases. The interactive tree visualization is powered by D3.js, providing smooth zoom, pan, and animations.
+
+## Features
+
+- Interactive tree visualization with D3.js
+- Dark theme with glassmorphism design
+- Unlimited nesting depth
+- Rich text editing with Markdown support
+- Global search with Ctrl+K
+- Responsive across all devices
+- Secure authentication with bcrypt
+- No external dependencies required
+
+## Requirements
+
+- PHP 8.0 or higher
+- PDO SQLite extension
+- Apache with mod_rewrite (or compatible web server)
+
+## Installation
+
+### Local Development
+
+1. Clone this repository to your web server directory:
+
+```bash
+git clone https://github.com/yourusername/knowledge-tree.git
+cd knowledge-tree
+```
+
+2. Ensure the `data` directory is writable:
+
+```bash
+chmod 755 data/
+```
+
+3. Start the PHP development server:
+
+```bash
+php -S localhost:8000
+```
+
+4. Open `http://localhost:8000` in your browser
+
+5. Follow the installation wizard to create your admin account
+
+### Shared Hosting
+
+1. Upload all files to your hosting directory via FTP or file manager
+
+2. Set permissions on the `data/` directory to 755
+
+3. Navigate to your domain in a web browser
+
+4. Complete the installation wizard
+
+## Project Structure
+
+```
+knowledge-tree/
+├── index.php              # Application entry point
+├── config.php             # Configuration settings
+├── setup.php              # Installation wizard
+├── .htaccess              # URL rewriting rules
+├── app/
+│   ├── Core/              # Framework core classes
+│   │   ├── Database.php   # SQLite connection handler
+│   │   ├── Router.php     # URL routing engine
+│   │   ├── Auth.php       # Authentication manager
+│   │   └── Response.php   # HTTP response helpers
+│   ├── Controllers/       # Request handlers
+│   │   ├── AuthController.php
+│   │   ├── DashboardController.php
+│   │   └── ApiController.php
+│   ├── Models/            # Data models
+│   │   ├── User.php
+│   │   └── Node.php
+│   └── Views/             # Page templates
+├── public/
+│   ├── css/               # Stylesheets
+│   ├── js/                # JavaScript files
+│   └── assets/            # Static assets
+└── data/                  # Database storage
+```
+
+## Usage
+
+### Navigation
+
+- **Pan**: Click and drag on empty canvas
+- **Zoom**: Mouse wheel or trackpad gesture
+- **Select**: Click on any node
+- **Context Menu**: Right-click on a node
+- **Search**: Press Ctrl+K (Cmd+K on macOS)
+
+### Keyboard Shortcuts
+
+| Shortcut | Action |
+|----------|--------|
+| Ctrl+K | Open search |
+| Ctrl+S | Save current node |
+| Escape | Close editor or menu |
+| Delete | Remove selected node |
+
+### Node Operations
+
+- Click the plus icon to add a root node
+- Right-click a node for edit, add child, duplicate, or delete
+- Double-click a node to open the editor
+- Click expand/collapse indicators on nodes with children
+
+## Security
+
+- Bcrypt password hashing
+- CSRF token validation on all forms
+- Prepared SQL statements throughout
+- Output escaping to prevent XSS
+- Secure session configuration
+- Rate limiting on authentication
+
+## Configuration
+
+Edit `config.php` to adjust:
+
+```php
+// Session timeout (seconds)
+define('SESSION_LIFETIME', 3600 * 8);
+
+// Password hashing cost
+define('BCRYPT_COST', 12);
+
+// Allow new user registration
+define('ALLOW_REGISTRATION', true);
+```
+
+## Browser Support
+
+- Chrome 90 and later
+- Firefox 88 and later
+- Safari 14 and later
+- Edge 90 and later
+
+## License
+
+MIT License. See LICENSE file for details.
+
+## Credits
+
+- [D3.js](https://d3js.org/) - Data visualization library
+- [Font Awesome](https://fontawesome.com/) - Icon toolkit
+- [Inter](https://rsms.me/inter/) - Typeface

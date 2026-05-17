@@ -1,0 +1,32 @@
+# Database
+data/*.db
+data/*.db-journal
+data/*.db-wal
+data/*.db-shm
+
+# Logs
+data/*.log
+
+# OpenClaude
+.openclaude/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Temporary files
+*.tmp
+*.bak
+
+# Composer (if used)
+vendor/
+
+# Node modules (if used)
+node_modules/
